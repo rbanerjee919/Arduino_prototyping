@@ -1,0 +1,97 @@
+
+/*
+ RETRO
+ Space Invader Game
+ Author: Stuff 
+ */
+
+// include the library code:
+#include <LiquidCrystal.h>
+
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
+//current laser position and direction
+int laserColumn, dir;
+//Invader string and no of invaders
+String invaders;
+int no_of_inv;
+
+//Timer variables
+unsigned long timerStart;
+unsigned long timerInterval;
+unsigned long currentTime;
+
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  
+  //initialize laser position
+  laserColumn = 0;
+  dir = 1;
+
+  invaders = "** * **   *   **";
+  no_of_inv = 8;
+  lcd.setCursor(0,0);
+  lcd.print(invaders);
+
+  //Set up laser button
+  pinMode(4, INPUT_PULLUP);
+
+  //Initialise timer
+  timerStart = millis();
+  timerInterval = 250;
+
+}
+
+void loop() {
+
+    //Set current time
+    currentTime = millis();
+    if ((currentTime-timerStart) > timerInterval) {
+
+        //Reset timer
+        timerStart = currentTime;
+
+        
+        //Erase old frame
+        lcd.setCursor(laserColumn,1);
+        lcd.print(' ');
+        
+        //Calculate new frame
+        if (laserColumn == 15 or laserColumn == 0) {
+          dir = -dir;
+        }
+        
+        laserColumn = (laserColumn + dir) % 16;
+        
+        // put your main code here, to run repeatedly:
+        // set the cursor to column 0, line 1
+        // (note: line 1 is the second row, since counting begins with 0):
+        lcd.setCursor(laserColumn,1);
+        lcd.print('^');
+      
+        //Check button and zap invaders
+      
+        if (digitalRead(4) == LOW) {
+          if (invaders[laserColumn] == '*') {
+            lcd.setCursor(laserColumn,0);
+            lcd.print(' ');
+            invaders[laserColumn] = " ";
+            no_of_inv = no_of_inv - 1;
+          }
+        }
+    
+        if (no_of_inv == 0) {
+            lcd.clear();
+            lcd.print("All invaders");
+            lcd.setCursor(0,1);
+            lcd.print("zapped!!!");
+            while (true);
+        }
+
+    }
+  
+}
+  
